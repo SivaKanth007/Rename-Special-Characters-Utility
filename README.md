@@ -13,64 +13,46 @@ This Python script recursively renames files and directories in a specified fold
 ## Usage
 
 ### 1. Prerequisites
-- Python 3.x installed on your system.
+# Rename Special Characters Utility
 
-### 2. Setup
-- Place the script (`rename_special_charecters.py`) in your desired directory.
-- Edit the `path` variable in the script to point to the folder you want to process. Example:
-  ```python
-  path = "C:\\path\\to\\your\\target\\folder"
-  ```
+A small command-line utility that renames files and directories by replacing non-ASCII characters in their basenames with underscores. The tool is intended to help make filenames more portable across systems that may not handle special characters consistently.
 
-### 3. Run the Script
-Open a terminal (PowerShell, Command Prompt, etc.), navigate to the script's directory, and run:
+## Requirements
+- Python 3.6 or later
+
+## Key behaviors
+- Recursive: walks the directory tree starting at the provided root path.
+- Two renaming strategies:
+  - `minimal` (default): collapse consecutive non-ASCII characters into a single underscore.
+  - `all`: replace every non-ASCII character with an underscore.
+- Safe collision handling: if the target name already exists, the tool appends a numeric suffix before the extension (e.g. `file.txt` -> `file_1.txt`).
+- Dry-run mode shows the proposed final candidate name (including numeric suffix) without making changes.
+
+## Usage
+Run from a shell. If no path is provided the current directory (`.`) is used.
+
+Examples (PowerShell):
+
 ```pwsh
-python rename_special_charecters.py
+# Show proposed renames without making changes
+python rename_special_charecters.py --dry-run
+
+# Rename contents under C:\data using default (minimal) mode
+python rename_special_charecters.py C:\data
+
+# Only process names containing the substring "project" and replace every non-ASCII char
+python rename_special_charecters.py C:\data --pattern project --mode all
 ```
 
-### 4. What Happens
-- The script will walk through all files and folders under the specified path.
-- It will rename any file or folder containing non-ASCII characters in its name, replacing those characters with underscores.
-- All changes will be printed to the terminal for review.
+Options
+- path (positional): Root path to process. Default: `.` (current directory)
+- --mode {minimal,all}: Choose renaming strategy. Default: `minimal`
+- --pattern PATTERN: Only rename files/directories whose name contains PATTERN (simple substring match)
+- --dry-run: If set, print `DRY-RUN: <src> -> <candidate>` for each change and do not perform filesystem modifications
 
-## Code Documentation
+Notes
+- The script applies renaming to basenames only and joins them with their existing parent paths (i.e. `os.path.join(root, new_name)`).
+- Always run with `--dry-run` first to inspect changes.
 
-### Functions
+License: MIT
 
-#### `Rename(name)`
-- Input: `name` (str) — The file or directory name.
-- Output: Renamed string with consecutive non-ASCII characters replaced by a single underscore.
-- Logic: Iterates through each character, checks if it is ASCII, and builds the new name accordingly.
-
-#### `Rename1(name)`
-- Input: `name` (str) — The file or directory name.
-- Output: Renamed string with every non-ASCII character replaced by an underscore.
-- Logic: Iterates through each character, replaces non-ASCII with `_`.
-
-#### `rename_dirs(root, dirs)`
-- Input: `root` (str), `dirs` (list of str) — The current directory and its subdirectories.
-- Output: None
-- Logic: Renames each directory using `Rename`. If a conflict/error occurs, uses `Rename1`.
-
-#### `list_pattern_files(path, pattern)`
-- Input: `path` (str), `pattern` (str) — The root directory and file pattern (not actively used).
-- Output: None
-- Logic: Walks through the directory tree, renames directories and files using the above functions, handles conflicts, and prints changes.
-
-### Main Execution
-- Set the `path` variable to your target directory.
-- Call `list_pattern_files(path, pattern)` to start the renaming process.
-
-## Notes
-- The script does not delete any files or directories.
-- Commented code is present for pattern-based deletion, but is not active by default.
-- Always back up your data before running bulk renaming scripts.
-
-## Example Output
-```
-C:\path\to\your\target\folder\földér
-C:\path\to\your\target\folder\f_ld_r
-```
-
-## License
-MIT License
